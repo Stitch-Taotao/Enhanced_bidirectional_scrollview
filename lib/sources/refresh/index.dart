@@ -1,0 +1,9 @@
+library indicator;
+export 'indicator_task_manager.dart';
+export 'indicator.dart';
+export 'auto_indicator/auto_indicator.dart';
+export 'header/classic_header.dart';
+export 'drives_indicator/builder_indicator.dart';
+export 'drives_indicator/drive_indicator.dart';
+export 'drives_indicator/header_indicator.dart';
+export 'drives_indicator/footer_indicator.dart';
