@@ -19,11 +19,10 @@ enum DivenIndicatorStatusEnum {
   end, // 回弹处理完毕,那么什么时候重返idle状态呢，就在这一帧结束之后
 }
 
-abstract class MTDriveIndicator<T extends Object> extends MTIndicator with BuilderMixin,PixelAwareMixin {
+abstract class MTDriveIndicator<T extends Object> extends MTIndicator with BuilderMixin, PixelAwareMixin {
   DivenIndicatorStatusEnum get status => _indicatorNotiferStatus.status;
 
   MTProcessingManager processManager;
-
 
   MTDriveIndicator({
     DivenIndicatorStatusEnum status = DivenIndicatorStatusEnum.idle,
@@ -188,9 +187,9 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
       /// 在微任务中，仍然会可能处理beginActivity，所以要注意！目前观测到Drag松手变Idle的时候可能会进入微任务处理...
       var phase = FrameUtil.phase;
       if (phase == SchedulerPhase.midFrameMicrotasks) {
-        print("不合理");
+        mtLog("不合理");
       }
-      print("状态变为IndicatorStatusEnum.loading的阶段是 ：phase:$phase");
+      mtLog("状态变为IndicatorStatusEnum.loading的阶段是 ：phase:$phase");
 
       /// 在layout之后可能主动goIdle，会由ready变为loading的，则为persistentCallbacks，因此我们必须处理手势是否拖拽的节点
       assert(phase == SchedulerPhase.idle, "由于在处理中的时候不会改变loading等处理中的状态，所以只有在触发的那一刻才会进入这里，那么一定是idle的手势触发这一种情况");
@@ -224,8 +223,8 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
 
         /// 在这之后修正一下惯性问题，这么一套复杂的操作只是相当于把调整尺寸导致的惯性问题移动到了correctPixel之后
         /// 但是要想阻止惯性的发生，还必须将createBallistic的返回设置为null
-        /// TODO - JMT - 这里仍然有问题！
-        position.goBallistic(0);
+        /// MARK - JMT - 这里将是否处理惯性移到physic里面了
+        // position.goBallistic(0);
       });
     }
     if (newStatus == DivenIndicatorStatusEnum.end) {
@@ -233,8 +232,6 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
       changeStatus(DivenIndicatorStatusEnum.idle);
     }
   }
-
-
 
   /// 根据pixel更改状态。
   /// 并且必须是拖拽的情况下才改变状态
@@ -246,7 +243,7 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
           if (absOverscrollOffset >= triggerOffset) {
             changeStatus(DivenIndicatorStatusEnum.ready);
           } else {
-            // print("diff:$diff");
+            // mtLog("diff:$diff");
             if (diff < 0) {
               // 向正向滑动
               changeStatus(DivenIndicatorStatusEnum.dragForward);
@@ -283,21 +280,20 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
     }
   }
 
-
-
   late final IndicatorNotifierStatus<T> _indicatorNotiferStatus;
 
   IndicatorNotifier? _indicatorNotifer;
 
   IndicatorNotifier get indicatorNotifer => _indicatorNotifer ??= IndicatorNotifier(_indicatorNotiferStatus);
-    /// 是否需要预留indicotor高度
+
+  /// 是否需要预留indicotor高度
   @override
   bool get needIndicatorHeight => true;
+
   /// 是否需要在不完全显示的时候，弹出整个indicator
   @override
   bool get needShowFullIndicator => true;
 }
-
 
 class IndicatorNotifierStatus<T extends Object> extends ChangeNotifier {
   MTDriveIndicator indicator;
@@ -312,7 +308,7 @@ class IndicatorNotifierStatus<T extends Object> extends ChangeNotifier {
     // final _oldPixels = pixels;
     mtLog("changePixel: $status -> $value ${FrameUtil.phase}", tag: TagsConfig.tagIndicatorNotifer);
     pixels = value;
-    // print("changePixel: $_oldPixels -> $pixels");
+    // mtLog("changePixel: $_oldPixels -> $pixels");
     uiNotify();
   }
 
@@ -320,7 +316,7 @@ class IndicatorNotifierStatus<T extends Object> extends ChangeNotifier {
     mtLog("changeStatus: $status -> $value ${FrameUtil.phase}", tag: TagsConfig.tagIndicatorNotifer);
     // final oldStatus = status;
     status = value;
-    // print("changeStatus: $oldStatus -> $status");
+    // mtLog("changeStatus: $oldStatus -> $status");
     uiNotify();
   }
 
@@ -335,7 +331,7 @@ class IndicatorNotifierStatus<T extends Object> extends ChangeNotifier {
     mtLog("changeHiddenByTask: $status -> $value ${FrameUtil.phase}", tag: TagsConfig.tagIndicatorNotifer);
     // final oldhiddenByTask = hiddenByTask;
     hiddenByTask = value;
-    // print("changeHiddenByTask: $oldhiddenByTask -> $hiddenByTask");
+    // mtLog("changeHiddenByTask: $oldhiddenByTask -> $hiddenByTask");
     uiNotify();
   }
 
@@ -353,7 +349,6 @@ class IndicatorNotifierStatus<T extends Object> extends ChangeNotifier {
   String toString() {
     return "IndicatorNotifierStatus(pixels:${pixels.short},status:$status hiddenByTask:$hiddenByTask)";
   }
-  
 }
 
 class IndicatorNotifier extends ValueNotifier<IndicatorNotifierStatus> {

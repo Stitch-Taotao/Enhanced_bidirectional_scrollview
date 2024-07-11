@@ -20,7 +20,9 @@ class _ScrollContainerState extends State<ScrollContainer> {
     super.initState();
     widget.controller.init();
     widget.controller.updateUi = () {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     };
   }
 

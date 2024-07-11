@@ -9,6 +9,7 @@ import '../task/task_manager.dart';
 import '../task/tasks.dart';
 import '../task/user_operation.dart';
 import '../utils/frame_util.dart';
+// ignore: unused_import
 import '../utils/log_util.dart';
 import '../utils/logs/log_config.dart';
 import '../utils/rb_util.dart';
@@ -104,6 +105,11 @@ class InfiniteScorllController<T extends Object> {
   VoidCallback get modifyDataAndCorrectPixelCallback {
     _modifyDataAndCorrectPixelCallback ??= () {
       try {
+        if (_builderContext==null||!_builderContext!.mounted) {
+          taskManager.clearAllTask();
+          return;
+        }
+
         ///
         updateUi?.call();
         final tasks = taskManager.getAllMicroTasks();
@@ -150,10 +156,10 @@ class InfiniteScorllController<T extends Object> {
         taskManager.debugBuildTaskIsEmpty();
       } catch (e, stackTrace) {
         /// TODO 如何比较好的处理进入时间循环的堆栈信息呢？
-        print("(((------");
-        print(e);
+        mtLog("(((------", tag: TagsConfig.tagCatchError);
+        mtLog(e, tag: TagsConfig.tagCatchError);
         debugPrintStack(stackTrace: stackTrace, maxFrames: 10, label: "未捕获到的错误");
-        print("------)))");
+        mtLog("------)))", tag: TagsConfig.tagCatchError);
         assert(false);
         rethrow;
       }
@@ -220,7 +226,7 @@ class InfiniteScorllController<T extends Object> {
 
     /// 去除初始化的时候,其实初始化的时候放开也没问题
     if (phase == SchedulerPhase.midFrameMicrotasks) {
-      coordinator.needCorrectPixels();
+      coordinator.needCorrectPixels(correctType: CorrectEnum.jmmpToItem);
     }
     final key = source.tagKeyMap[tag];
     void jump() {
@@ -432,7 +438,7 @@ class InfiniteScorllController<T extends Object> {
     // if (notification is! ScrollUpdateNotification) {
     //   return;
     // }
-    // // print("ScrollUpdateNotification : ${position.pixels.short} ${instance.schedulerPhase} $debugFrameCount ${notification.scrollDelta?.short}");
+    // // mtLog("ScrollUpdateNotification : ${position.pixels.short} ${instance.schedulerPhase} $debugFrameCount ${notification.scrollDelta?.short}");
     // final delta = notification.scrollDelta ?? 0;
     // if (shouldTriggerLoadMore != null) {
     //   shouldTriggerLoadMore?.call(notification);
@@ -508,7 +514,7 @@ class InfiniteScorllController<T extends Object> {
         manager: taskManager,
         whenReady: (task) {
           // updateUi?.call(); // 没有必要调用刷新，统一移动到一起处理了
-          print("${task.debugIdentify}加载前keys:${source.keyItemMap.keys.map((e) => e.dataKey).toList()} 要加载的keys:${task.keys}");
+          mtLog("${task.debugIdentify}加载前keys:${source.keyItemMap.keys.map((e) => e.dataKey).toList()} 要加载的keys:${task.keys}");
         },
         appendLeading: appendLeading);
   }
@@ -535,7 +541,7 @@ class InfiniteScorllController<T extends Object> {
     while (renderBox != null) {
       final pd = renderBox.parentData as FlexParentData;
       if (renderBox is RenderTagWidget<T>) {
-        // print((renderBox as RenderMetaData).metaData);
+        // mtLog((renderBox as RenderMetaData).metaData);
         final topOffset = renderBox.localToGlobal(Offset.zero, ancestor: viewportRb);
         if (topOffset.dy >= 0) {
           leadingFirstkey = (renderBox).metaData;
@@ -600,7 +606,7 @@ class InfiniteScorllController<T extends Object> {
       assert(false);
       return;
     }
-    coordinator.needCorrectPixels();
+    coordinator.needCorrectPixels(correctType: CorrectEnum.keepCurrentVisualWindow);
     final reason = wrapReason.reason;
     _hasKeepVisualWindow = true;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -637,9 +643,9 @@ class InfiniteScorllController<T extends Object> {
       final lastBeforeLayoutPixel = scrollController.position.pixels;
       if ((preFrameOffsetPixel + scrollOffset - lastBeforeLayoutPixel) >= 1e-6) {
         //  "理论上布局之前，这两个值一定相等"
-        print(
+        mtLog(
             "$debugFrameCount $debugPhase preFrameOffsetPixel:${preFrameOffsetPixel.short} scrollOffset:${scrollOffset.short} lastBeforeLayoutPixel:${lastBeforeLayoutPixel.short}");
-        print("${preFrameOffsetPixel + scrollOffset},$lastBeforeLayoutPixel");
+        mtLog("${preFrameOffsetPixel + scrollOffset},$lastBeforeLayoutPixel");
         assert(false);
       }
     }
@@ -654,7 +660,7 @@ class InfiniteScorllController<T extends Object> {
     }(), "检查出错问题");
     // final beforeItems = source.tagKeyMap.keys;
     final beforeItems = source.keyItemMap.keys.map((e) => e.dataKey).toList();
-    print("保持滚动-前 reason:$reason beforeItems:$beforeItems $debugFrameCount $debugPhase");
+    mtLog("保持滚动-前 reason:$reason beforeItems:$beforeItems $debugFrameCount $debugPhase");
 
     /// 上一帧这个顶部元素之上的高度
     final preTopVisulItemTop = visualItemInfo.renderFlexRect.top;
@@ -679,8 +685,8 @@ class InfiniteScorllController<T extends Object> {
       // final afterItems = source.tagKeyMap.keys;
       final afterItems = source.keyItemMap.keys.map((e) => e.dataKey).toList();
 
-      print("保持滚动-后 reason:$reason beforeItems:$beforeItems afterItems:$afterItems $debugFrameCount $debugPhase");
-      // print("当前帧$debugFrameCount，items的列表变化情况：beforeItems：$beforeItems - afterItems:$afterItems");
+      mtLog("保持滚动-后 reason:$reason beforeItems:$beforeItems afterItems:$afterItems $debugFrameCount $debugPhase");
+      // mtLog("当前帧$debugFrameCount，items的列表变化情况：beforeItems：$beforeItems - afterItems:$afterItems");
 
       RenderBox? renderBox = leadingFirstKey.globalKey.currentContext!.findRenderObject()! as RenderBox;
 
@@ -695,15 +701,15 @@ class InfiniteScorllController<T extends Object> {
       /// MARK : 这里为什么获取到的viewportRb中和renderflex中的位置不一样呢？
       /// 因为viewPort中的位置是以viewPort的起始点算的和renderFlex不一回事，因为renderFlex在viewPort中是有偏移的
       // final topOffset = renderBox!.localToGlobal(Offset(0, localLeading), ancestor: viewportRb);
-      // print("添加内容后topOffset:$topOffset topOffset2:$topOffset2 key.tag:${key.tag} leading:$localLeading");
+      // mtLog("添加内容后topOffset:$topOffset topOffset2:$topOffset2 key.tag:${key.tag} leading:$localLeading");
       final topOffset2 = renderBox!.localToGlobal(Offset(0, localLeading), ancestor: viewportRb.child);
       final noOffsetPosition = topOffset2.dy;
       final targetOffset = noOffsetPosition + scrollOffset;
       const tolerr = 0.001;
 
-      print(
+      mtLog(
           "当前帧$debugFrameCount累计偏移为:${scrollOffset.short} 数值： beforeLayoutPixel:${beforeLayoutPixel.short} afterLayoutPixel :${afterLayoutPixel.short} ，noOffsetPosition:${noOffsetPosition.short} preFrameOffsetPixel:$preFrameOffsetPixel ");
-      print("触发保持屏幕滚动的reason:$reason，$debugFrameCount $debugPhase");
+      mtLog("触发保持屏幕滚动的reason:$reason，$debugFrameCount $debugPhase");
       // var sizeAppend = newMaxExtent - oldMaxExtent;
       // if (newMaxExtent >= oldMaxExtent) {
       /// 先触发追加，再触发删除，但是保持屏幕位置的代码却是在追加和删除之后才会触发的。
@@ -716,8 +722,8 @@ class InfiniteScorllController<T extends Object> {
       if (!(sizeAppend.abs() > 0)) {
         /// TODO: 删除了之后，pixel会被修正，而这个修正并不一定是对的，所以afterLayoutPixel不能作为判断依据
         if (!((afterLayoutPixel - (preFrameOffsetPixel + scrollOffset)).abs() < tolerr)) {
-          print("滚动衔接没有处理好，请检查哪里出问题了！阶段：${WidgetsBinding.instance.schedulerPhase}");
-          print("oldMaxExtent: $oldMaxExtent,newMaxExtent: $newMaxExtent");
+          mtLog("滚动衔接没有处理好，请检查哪里出问题了！阶段：${WidgetsBinding.instance.schedulerPhase}");
+          mtLog("oldMaxExtent: $oldMaxExtent,newMaxExtent: $newMaxExtent");
           assert(false);
         }
       }
@@ -834,7 +840,7 @@ class InfiniteScorllController<T extends Object> {
     }
     assert(() {
       final keys = source.keyItemMap.keys;
-      print("触发删除 deleteLeading:$deleteLeading 删除之前【${keys.firstOrNull?.dataKey},${keys.lastOrNull?.dataKey},要删除的元素是:$needDeletekeys");
+      mtLog("触发删除 deleteLeading:$deleteLeading 删除之前【${keys.firstOrNull?.dataKey},${keys.lastOrNull?.dataKey},要删除的元素是:$needDeletekeys");
       return true;
     }());
 
@@ -842,7 +848,8 @@ class InfiniteScorllController<T extends Object> {
     final visualItemInfo = _findVisualItem();
     if (visualItemInfo != null) {
       /// 添加前直接判断需不需要添加这个删除more事件，因为，可能会存在不需要删除more的情况
-      if (needDeletekeys.contains(visualItemInfo.leadingFirstkey.dataKey) || needDeletekeys.contains(visualItemInfo.leadingLastkey.dataKey)) {
+      if (needDeletekeys.contains(visualItemInfo.leadingFirstkey.dataKey) ||
+          needDeletekeys.contains(visualItemInfo.leadingLastkey.dataKey)) {
         return false;
       }
     }
@@ -914,9 +921,13 @@ extension PositionExtension on KeepVisualWindowsReason {
       case KeepVisualWindowsReason.none:
         return other;
       case KeepVisualWindowsReason.appendLeading:
-        return (other == KeepVisualWindowsReason.deleteLeading || other == KeepVisualWindowsReason.both) ? KeepVisualWindowsReason.both : this;
+        return (other == KeepVisualWindowsReason.deleteLeading || other == KeepVisualWindowsReason.both)
+            ? KeepVisualWindowsReason.both
+            : this;
       case KeepVisualWindowsReason.deleteLeading:
-        return (other == KeepVisualWindowsReason.appendLeading || other == KeepVisualWindowsReason.both) ? KeepVisualWindowsReason.both : this;
+        return (other == KeepVisualWindowsReason.appendLeading || other == KeepVisualWindowsReason.both)
+            ? KeepVisualWindowsReason.both
+            : this;
       case KeepVisualWindowsReason.both:
         return KeepVisualWindowsReason.both;
       default:

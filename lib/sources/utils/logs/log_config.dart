@@ -24,10 +24,13 @@ class TagsConfig extends BaseConfig {
   static const String tagOnPointerEvent = " tagOnPointerEvent";
   static const String tagAnimationController = " tagAnimationController";
   static const String tagIndicatorShow = " tagIndicatorShow";
+  static const String tagCatchError = " tagCatchError"; // 对于微任务中的异常
+  static const String tagSyncAutoFrame = " tagSyncAutoFrame"; // 同步自动触发前后的帧和阶段
   @override
   bool get includeDefautTag => false;
   @override
   List<String> get tags => [
+        tagCatchError,
         // tagIndicator,
         // tagActivity,
         // tagPixel,
@@ -40,6 +43,7 @@ class TagsConfig extends BaseConfig {
         // tagOnPointerEvent,
         // tagAnimationController,
         // tagIndicatorShow,
+        // tagSyncAutoFrame,
       ];
 }
 

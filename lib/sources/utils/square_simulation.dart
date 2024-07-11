@@ -2,6 +2,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart';
 
+import 'logs/log_config.dart';
+
 class ClampGravitySimulation extends Simulation {
   ClampGravitySimulation(
     double acceleration,
@@ -29,7 +31,7 @@ class ClampGravitySimulation extends Simulation {
 
   double _normalX(double time) {
     final s = _x + _v * time + 0.5 * _a * time * time;
-    print("s:$s v:_$_v");
+    mtLog("s:$s v:_$_v");
     return s;
   }
 

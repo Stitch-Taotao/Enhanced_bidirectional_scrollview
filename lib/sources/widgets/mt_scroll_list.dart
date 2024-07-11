@@ -193,4 +193,8 @@ class _InfiniteScrollListState<T extends Object> extends State<InfiniteScrollLis
 
     return res ?? const SizedBox();
   }
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }

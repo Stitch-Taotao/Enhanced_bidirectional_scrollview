@@ -108,7 +108,7 @@
 //     Object? tag,
 //     StackTrace? stackTrace,
 //   }) {
-//     print("$obj");
+//     mtLog("$obj");
 //   }
 
 //   static String padString(String s) {

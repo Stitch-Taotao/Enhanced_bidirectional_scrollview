@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
-import 'dart:math' as math;
 import '../refresh/drives_indicator/drive_indicator.dart';
 import '../task/load_trigger.dart';
 import '../utils/frame_util.dart';
-import '../utils/log_util.dart';
 import '../utils/logs/log_config.dart';
 import '../utils/square_simulation.dart';
 import 'scoll_coordinator.dart';
 import 'scroll_infinite_controller.dart';
+import 'scroll_position.dart';
 
 /// [ClampingScrollPhysics]
 class MTScrollPhysics extends BouncingScrollPhysics {
   final InfiniteScorllController infiniteScorllController;
 
-  const MTScrollPhysics({ScrollPhysics? parent, required this.infiniteScorllController}) : super(parent: parent);
+  const MTScrollPhysics({super.parent, required this.infiniteScorllController});
 
   ScrollCoordinator get coordinator => infiniteScorllController.coordinator;
 
@@ -105,11 +104,25 @@ class MTScrollPhysics extends BouncingScrollPhysics {
     // return super.createBallisticSimulation(position, velocity);
     final Tolerance tolerance = toleranceFor(position);
     const decelerationRate = ScrollDecelerationRate.normal;
+    final loadTrigger = coordinator.loadTrigger;
 
-    /// TODO：如果是刚好增加内容导致的尺寸更改，那么就不需要触发goBallstic,
-    /// TODO:这里会导致Bug，即同时有上拉加载和下拉加载的情况，下拉加载可能会出现卡帧！
+    final headerIndicator = loadTrigger.headerIndicator;
+    final footerIndicator = loadTrigger.footerIndicator;
     /// 最终决定在强制更新pixels的地方标记一下，不能再调用goBallstic了。
-    if (infiniteScorllController.coordinator.shouldRejectBallstic) {
+    if (coordinator.shouldRejectBallstic) {
+      /// 恰好是触发惯性这时候
+      if (coordinator.correctType == CorrectEnum.jmmpToItem) {
+        return null;
+      } else {
+        /// 这种情况下一定是追加顶部内容，导致的，此刻一定是顶部loaded的时候
+        /// TODO:这里可能是autoindicator或者下拉indicator
+        if (footerIndicator != null) {
+          WidgetsBinding.instance.addPostFrameCallback((d){
+            // (position as MTScrollPositionWithSingleContext).activity?.resetActivity();
+            (position as MTScrollPositionWithSingleContext).goBallistic(velocity);
+          });
+        }
+      }
       mtLog("shouldRejectBallstic：${infiniteScorllController.coordinator.shouldRejectBallstic} ${FrameUtil.debugFrameCount}",
           tag: TagsConfig.tagShouldRejectBallistic);
       return null;
@@ -117,13 +130,9 @@ class MTScrollPhysics extends BouncingScrollPhysics {
     // if (parent != null) {
     //   return parent?.createBallisticSimulation(position, velocity);
     // }
-    final loadTrigger = coordinator.loadTrigger;
-
-    final headerIndicator = loadTrigger.headerIndicator;
 
     /// 如果当前是loading、loaded、状态,并且满足边界状态
     final pixels = position.pixels;
-    bool overTriggerHeight = false;
     double headProcessingExtent = 0.0;
     double footProcessingExtent = 0.0;
 
@@ -189,7 +198,7 @@ class MTScrollPhysics extends BouncingScrollPhysics {
       //   }
       // }
     }
-    final footerIndicator = loadTrigger.footerIndicator;
+
     if (footerIndicator != null) {
       footProcessingExtent = footerIndicator.needIndicatorHeight ? footerIndicator.indicatorHeight : 0;
 

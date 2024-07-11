@@ -41,6 +41,11 @@ class TaskManager<T extends Object> {
     _allOriginTask.remove(task);
     _microTasks.remove(task);
   }
+  /// 移除所有的任务
+  void clearAllTask() {
+    _allOriginTask.clear();
+    _microTasks.clear();
+  }
 
   bool get hasHighLevelTask {
     final filtTasks = _allOriginTask.whereType<UserTask<T>>();
@@ -115,7 +120,7 @@ class TaskManager<T extends Object> {
   /// 3.要么就是添加到微任务队列中，没有任何hook的方式，如果在动画阶段，添加的话没有任何问题
   ///   如果在idle阶段，则添加的微任务会在build和layout之前触发，不满足需求
   void addTransientCallbacks() {
-    print("addTransientCallbacks");
+    mtLog("addTransientCallbacks");
     if (hasAddTransitentCallback) {
       return;
     }
@@ -126,9 +131,10 @@ class TaskManager<T extends Object> {
 
     /// 如果由动画触发的添加任务，并且之后异步任务请求是同步完成的，那么就是transientCallbacks阶段
     /// transientCallbacks阶段添加transientCallback任务不会在当地立即触了，必须等到下一帧才行
+    /// 因此会出现即使是同步任务，仍然非同帧加载
     final phase = FrameUtil.phase;
     WidgetsBinding.instance.scheduleFrameCallback((timeStamp) {
-      print("scheduleFrameCallback");
+      mtLog("scheduleFrameCallback");
       int transitentFrame = FrameUtil.frameCount;
       Future.microtask(() {
         int micFrame = FrameUtil.frameCount;
@@ -150,10 +156,10 @@ class TaskManager<T extends Object> {
 
         // } catch (e) {
         //   /// TODO 如何比较好的处理进入时间循环的堆栈信息呢？
-        //   print("(((------");
-        //   print(e);
+        //   mtLog("(((------");
+        //   mtLog(e);
         //   debugPrintStack(stackTrace: stackTrace, maxFrames: 10, label: "未捕获到的错误");
-        //   print("------)))");
+        //   mtLog("------)))");
         //   assert(false);
         //   rethrow;
         // }

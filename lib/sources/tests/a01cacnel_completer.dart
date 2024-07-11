@@ -2,24 +2,26 @@
 
 import 'package:async/async.dart';
 
+import '../utils/logs/log_config.dart';
+
 void main(List<String> args) {
   test1();
 }
 
 void test1() {
-  print("begin test1");
+  mtLog("begin test1");
   // CancelableCompleter completer = CancelableCompleter();
   Future.microtask(() {
-    print("Future.microtask");
+    mtLog("Future.microtask");
   });
   CancelableOperation operation = CancelableOperation.fromFuture(
     Future.delayed(Duration(seconds: 3), (){
-      print("future then test1");
+      mtLog("future then test1");
     }),
     onCancel: () {
-      print("onCancel test1");
+      mtLog("onCancel test1");
       return Future.delayed(Duration(seconds: 1), () {
-        print("onCancel test1 delay");
+        mtLog("onCancel test1 delay");
         return 3;
       });
     },
@@ -27,10 +29,10 @@ void test1() {
   
   final res = operation.cancel();
   res.then((value) {
-    print("res then test1 - value $value");
+    mtLog("res then test1 - value $value");
   });
   operation.then((value) {
-    print("operation then test1 - value $value");
+    mtLog("operation then test1 - value $value");
   });
-  print("end test1");
+  mtLog("end test1");
 }

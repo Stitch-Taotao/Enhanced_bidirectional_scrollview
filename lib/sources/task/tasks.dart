@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../scroll_config/keys.dart';
 import '../utils/frame_util.dart';
+import '../utils/logs/log_config.dart';
 import 'errors.dart';
 import 'task_manager.dart';
 import 'task_status.dart';
@@ -126,7 +127,7 @@ abstract class Task<T extends Object> {
 
   void ready() {
     readyFrameCount = FrameUtil.frameCount;
-    print("$debugIdentify - 完成前后： 前:$initFrameCount, 后:$readyFrameCount $debugPhase");
+    mtLog("$debugIdentify - 完成前后： 前:$initFrameCount, 后:$readyFrameCount $debugPhase");
     _debugAssertReadyPhase();
     assert(state == TaskState.init);
     state = TaskState.readyToComplete;
@@ -179,7 +180,7 @@ abstract class Task<T extends Object> {
     state = TaskState.complete;
     manager.removeTask(this);
     doneState(1);
-    print("$debugIdentify 完成:$_debugCompleteOrCancelReason $debugPhase");
+    mtLog("$debugIdentify 完成:$_debugCompleteOrCancelReason $debugPhase");
   }
 
   void cancel({required String reason}) {
@@ -189,7 +190,7 @@ abstract class Task<T extends Object> {
     state = TaskState.cancel;
     manager.removeTask(this);
     doneState(2);
-    print("任务$debugIdentify 取消:$_completeOrCancelReason");
+    mtLog("任务$debugIdentify 取消:$_completeOrCancelReason");
   }
 
   /// 整体任务完成情况
@@ -287,14 +288,14 @@ class AppendTask<T extends Object> extends Task<T> with MixinAsyncReadyTask<T> {
     try {
       keys = await _then;
       if (isFinished) {
-        print("任务$debugIdentify 已经完成，完成原因：$_completeOrCancelReason");
+        mtLog("任务$debugIdentify 已经完成，完成原因：$_completeOrCancelReason");
         assert(false, "已经完成了? - 原因：$_completeOrCancelReason");
         return;
       }
       // task.complete();
     } on CancelTaskError {
       /// 主动触发取消任务无需做任何事情
-      print("【X】主动取消任务，$debugIdentify,$_debugCompleteOrCancelReason,原本要添加的元素是: $keys");
+      mtLog("【X】主动取消任务，$debugIdentify,$_debugCompleteOrCancelReason,原本要添加的元素是: $keys");
       // cancel(reason: "请求发生了错误，导致整个任务退出");
       return;
     } finally {
