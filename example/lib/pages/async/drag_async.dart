@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:bidirectional_load_scrollview/bidirectional_load_scrollview.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -38,7 +37,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    var loadingAutoScrollLoad2 = loadingAutoScrollLoad<int>();
+    var loadingAutoScrollLoad2 = indicatorLoad<int>();
     infiniteScorllController = InfiniteScorllController<int>(
       initList: () {
         return UserInitOperation(showKey: 3, keys: List.generate(20, (index) => index + 1));
@@ -92,9 +91,8 @@ class _HomeState extends State<Home> {
       }
     });
   }
-
-  AutoLoadTrigger<T> loadingAutoScrollLoad<T extends Object>() {
-    return AutoLoadTrigger<T>(
+ IndicatorLoadTrigger<T> indicatorLoad<T extends Object>() {
+    return IndicatorLoadTrigger<T>(
       appendHeadTask: (infiniteScorllController) {
         final source = infiniteScorllController.source.keyItemMap.keys.toList();
         int count = 5;
@@ -107,7 +105,9 @@ class _HomeState extends State<Home> {
           newIndex -= count;
           result = List.generate(count, (index) => newIndex++);
         }
-        return Future.delayed(const Duration(seconds: 2), () {
+
+        // return SynchronousFuture(result as List<T>);
+        return Future.delayed(const Duration(seconds: 1), () {
           return result as List<T>;
         });
       },
@@ -124,13 +124,23 @@ class _HomeState extends State<Home> {
           result = List.generate(count, (index) => ++newIndex);
         }
 
-        return Future.delayed(const Duration(seconds: 2), () {
+        // return SynchronousFuture(result as List<T>);
+        return Future.delayed(const Duration(seconds: 1), () {
           return result as List<T>;
         });
       },
+      headerIndicatorBuilder: (status) {
+        return ClassicHeader(indicatorNotifierStatus: status);
+      },
+
+      // headerIndicatorBuilder: (manager, controller) {
+      //   return ClassicHeaderIndicator(
+      //     infiniteScorllController: controller as InfiniteScorllController<T>,
+      //     processManager: manager,
+      //   );
+      // },
     );
   }
-
   @override
   Widget build(BuildContext context) {
     Widget infiniteScrollList = InfiniteScrollList<int>(

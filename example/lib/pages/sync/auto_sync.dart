@@ -76,17 +76,6 @@ class _HomeState extends State<Home> {
       maxCount: 30,
       loadTrigger: loadingAutoScrollLoad2,
     );
-
-    loadingAutoScrollLoad2.headerIndicator?.isProcessing.addListener(() {
-      if (loadingAutoScrollLoad2.headerIndicator?.isProcessing.value ?? false) {
-        setState(() {});
-        headerIsProcessing = true;
-      } else {
-        setState(() {});
-        headerIsProcessing = false;
-        // mtLog("not isProcessing");
-      }
-    });
   }
 
   AutoLoadTrigger<T> loadingAutoScrollLoad<T extends Object>() {
@@ -131,9 +120,6 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Infinite Scroll List'),
-        actions: [
-          if (headerIsProcessing) CircularProgressIndicator() else Icon(Icons.refresh),
-        ],
       ),
       body: infiniteScrollList,
       floatingActionButton: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -168,10 +154,7 @@ class _HomeState extends State<Home> {
             setState(() {
               /// 跳转到第60个  包含有的清空
               if (infiniteScorllController.source.keyItemMap.keys.length >= 10) {
-                // final key = infiniteScorllController.source.keyItemMap.keys.elementAt(5);
                 final key = infiniteScorllController.source.keyItemMap.keys.first;
-                // infiniteScorllController.jump(key: key, tagKey: Tagkey(Tag(category: Category.yellow)));
-                // infiniteScorllController.jump(key: key);
                 infiniteScorllController.jumpExistKey(
                   tag: key.dataKey,
                   showTag: Tag(category: Category.yellow),
@@ -188,10 +171,7 @@ class _HomeState extends State<Home> {
             setState(() {
               /// 跳转到第60个  包含有的清空
               if (infiniteScorllController.source.keyItemMap.keys.length >= 10) {
-                // final key = infiniteScorllController.source.keyItemMap.keys.elementAt(5);
                 final key = infiniteScorllController.source.keyItemMap.keys.last;
-                // infiniteScorllController.jump(key: key, tagKey: Tagkey(Tag(category: Category.yellow)));
-                // infiniteScorllController.jump(key: key);
                 infiniteScorllController.jumpExistKey(
                   tag: key.dataKey,
                   showTag: Tag(category: Category.yellow),

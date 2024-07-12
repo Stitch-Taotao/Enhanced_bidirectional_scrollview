@@ -82,8 +82,8 @@ class _HomeState extends State<Home> {
       loadTrigger: indicatorLoad(),
       // loadTrigger: loadingAutoScrollLoad2,
     );
-    loadingAutoScrollLoad2.headerIndicator?.isProcessing.addListener(() {
-      if (loadingAutoScrollLoad2.headerIndicator?.isProcessing.value ?? false) {
+    loadingAutoScrollLoad2.headerIndicator?.isProcessingNotifier.addListener(() {
+      if (loadingAutoScrollLoad2.headerIndicator?.isProcessingNotifier.value ?? false) {
         // mtLog("isProcessing");
       } else {
         // mtLog("not isProcessing");
@@ -95,7 +95,7 @@ class _HomeState extends State<Home> {
     return IndicatorLoadTrigger();
   }
 
-  LoadTrigger<T> indicatorLoad<T extends Object>() {
+  IndicatorLoadTrigger<T> indicatorLoad<T extends Object>() {
     return IndicatorLoadTrigger<T>(
       appendHeadTask: (infiniteScorllController) {
         final source = infiniteScorllController.source.keyItemMap.keys.toList();

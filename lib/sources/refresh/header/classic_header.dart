@@ -132,17 +132,18 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
       case DivenIndicatorStatusEnum.ready:
         icon = SizedBox(
             child: Transform.rotate(
-          angle: pi / 2,
+          angle: 0,
           child: const Icon(
-            Icons.more_horiz_outlined,
+            Icons.run_circle_outlined,
           ),
         ));
         break;
       case DivenIndicatorStatusEnum.loading:
-        icon = const SizedBox(
+        icon =  Container(
+          padding: const EdgeInsets.all(8),
           width: 40,
           height: 40,
-          child: CircularProgressIndicator(
+          child: const CircularProgressIndicator(
             strokeWidth: 3,
             color: Colors.blueAccent,
           ),

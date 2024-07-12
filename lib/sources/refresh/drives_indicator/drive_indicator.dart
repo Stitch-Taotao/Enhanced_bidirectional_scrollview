@@ -78,6 +78,10 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
 
   /// 正在处理
   bool get isProcessing => status.index >= DivenIndicatorStatusEnum.loading.index;
+  ValueNotifier<bool> isProcessingNotifier = ValueNotifier(false);
+  void checkIsProcessing() {
+    isProcessingNotifier.value = isProcessing;
+  }
   @override
   bool get physicProcessing =>
       (status == DivenIndicatorStatusEnum.ready || status == DivenIndicatorStatusEnum.loading || status == DivenIndicatorStatusEnum.loaded);
@@ -146,6 +150,7 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
       return;
     }
     _indicatorNotiferStatus.changeStatus(newStatus);
+    checkIsProcessing();
     if (newStatus == DivenIndicatorStatusEnum.dragbackward) {
       _indicatorNotiferStatus.changeDragDirection(false);
     } else if (newStatus == DivenIndicatorStatusEnum.dragForward) {

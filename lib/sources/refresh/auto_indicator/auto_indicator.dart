@@ -11,23 +11,25 @@ import '../indicator_task_manager.dart';
 class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, PixelAwareMixin {
   final LoadTrigger loadTrigger;
   MTProcessingManager processManager;
+  Widget? Function(BuildContext context,MTAutoIndicator indicator)? builder;
   MTAutoIndicator({
     required this.loadTrigger,
     required this.processManager,
     required this.isHeader,
+    this.builder,
   });
 
   void beginLoading() {
     mtLog("触发加载：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}",tag:TagsConfig.tagSyncAutoFrame);
-    assert(isProcessing.value == false, "当前正在加载中，请勿重复加载");
+    assert(isProcessingNotifier.value == false, "当前正在加载中，请勿重复加载");
     appendTask = processManager.generateTask() as AppendTask<T>;
-    isProcessing.value = true;
+    isProcessingNotifier.value = true;
     appendTask?.taskStatus.listenComplete(() {
       mtLog("加载结束：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}",tag:TagsConfig.tagSyncAutoFrame);
-      isProcessing.value = false;
+      isProcessingNotifier.value = false;
     });
     appendTask?.taskStatus.listenCancel(() {
-      isProcessing.value = false;
+      isProcessingNotifier.value = false;
     });
   }
 
@@ -39,15 +41,18 @@ class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, P
   @override
   double get maxOverScrollExtent => 120;
 
-  final ValueNotifier<bool> isProcessing = ValueNotifier(false);
+  final ValueNotifier<bool> isProcessingNotifier = ValueNotifier(false);
   @override
-  bool get physicProcessing => isProcessing.value;
+  bool get physicProcessing => isProcessingNotifier.value;
 
   @override
   ScrollPositionWithSingleContext get position => loadTrigger.infiniteScorllController.scrollController.position;
 
   @override
   Widget? build(BuildContext context) {
+    if (builder != null) {
+      return builder!(context, this);
+    }
     // return Positioned(
     //   top: isHeader ? 0 : null,
     //   bottom: isHeader ? null : 0,

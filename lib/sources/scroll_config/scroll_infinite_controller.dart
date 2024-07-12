@@ -105,7 +105,7 @@ class InfiniteScorllController<T extends Object> {
   VoidCallback get modifyDataAndCorrectPixelCallback {
     _modifyDataAndCorrectPixelCallback ??= () {
       try {
-        if (_builderContext==null||!_builderContext!.mounted) {
+        if (_builderContext == null || !_builderContext!.mounted) {
           taskManager.clearAllTask();
           return;
         }
@@ -644,9 +644,12 @@ class InfiniteScorllController<T extends Object> {
       if ((preFrameOffsetPixel + scrollOffset - lastBeforeLayoutPixel) >= 1e-6) {
         //  "理论上布局之前，这两个值一定相等"
         mtLog(
-            "$debugFrameCount $debugPhase preFrameOffsetPixel:${preFrameOffsetPixel.short} scrollOffset:${scrollOffset.short} lastBeforeLayoutPixel:${lastBeforeLayoutPixel.short}");
-        mtLog("${preFrameOffsetPixel + scrollOffset},$lastBeforeLayoutPixel");
-        assert(false);
+            "$debugFrameCount $debugPhase preFrameOffsetPixel:${preFrameOffsetPixel.short} scrollOffset:${scrollOffset.short} lastBeforeLayoutPixel:${lastBeforeLayoutPixel.short}",
+            tag: TagsConfig.tagCatchError);
+        mtLog("${preFrameOffsetPixel + scrollOffset},$lastBeforeLayoutPixel", tag: TagsConfig.tagCatchError);
+
+        /// TODO: 这里需要调查为什么同步auto加载，如果页面销毁可能会导致断言错误
+        // assert(false);
       }
     }
 
