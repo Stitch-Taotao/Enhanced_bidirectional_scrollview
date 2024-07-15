@@ -35,8 +35,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late InfiniteScorllController<int> infiniteScorllController;
   bool headerIsProcessing = false;
-  bool isSync = true;
-  bool isDragTrgger = false;
+  bool isSync = false;
+  bool isDragTrgger = true;
   @override
   void initState() {
     super.initState();
@@ -225,7 +225,10 @@ class _HomeState extends State<Home> {
             child: Row(children: [
               Column(
                 children: [
-                  const Text("是否同步加载数据"),
+                  const SizedBox(height: 4),
+                  Container(
+                      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(6)),
+                      child: const Text("同步加载")),
                   Switch(
                       value: isSync,
                       onChanged: (value) {
@@ -236,9 +239,13 @@ class _HomeState extends State<Home> {
                       }),
                 ],
               ),
+              const SizedBox(width: 10),
               Column(
                 children: [
-                  const Text("是否拖拽触发加载"),
+                  const SizedBox(height: 4),
+                  Container(
+                      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(6)),
+                      child: const Text("拖拽触发加载")),
                   Switch(
                       value: isDragTrgger,
                       onChanged: (value) {
