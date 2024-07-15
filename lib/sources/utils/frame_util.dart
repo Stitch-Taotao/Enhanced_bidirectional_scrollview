@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bidirectional_load_scrollview/sources/utils/logs/log_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -20,6 +21,7 @@ class FrameUtil {
     completer = Completer<void>();
     completer!.future.then((value) {
       _frameCount++;
+      mtLog("frameCount改变的阶段是：$debugPhase",tag: TagsConfig.tagFrameUtil);
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       completer!.complete();

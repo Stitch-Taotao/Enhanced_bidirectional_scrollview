@@ -26,6 +26,7 @@ class TagsConfig extends BaseConfig {
   static const String tagIndicatorShow = " tagIndicatorShow";
   static const String tagCatchError = " tagCatchError"; // 对于微任务中的异常
   static const String tagSyncAutoFrame = " tagSyncAutoFrame"; // 同步自动触发前后的帧和阶段
+  static const String tagFrameUtil = " tagFrameUtil"; // FrameUtil测试
   @override
   bool get includeDefautTag => false;
   @override
@@ -44,6 +45,7 @@ class TagsConfig extends BaseConfig {
         // tagAnimationController,
         // tagIndicatorShow,
         // tagSyncAutoFrame,
+        // tagFrameUtil,
       ];
 }
 

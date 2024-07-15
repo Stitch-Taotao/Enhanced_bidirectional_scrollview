@@ -127,7 +127,7 @@ abstract class Task<T extends Object> {
 
   void ready() {
     readyFrameCount = FrameUtil.frameCount;
-    mtLog("$debugIdentify - 完成前后： 前:$initFrameCount, 后:$readyFrameCount $debugPhase");
+    mtLog("$debugIdentify - 完成前后： 前:$initFrameCount, 后:$readyFrameCount $debugPhase",tag: TagsConfig.tagSyncAutoFrame);
     _debugAssertReadyPhase();
     assert(state == TaskState.init);
     state = TaskState.readyToComplete;
@@ -195,6 +195,7 @@ abstract class Task<T extends Object> {
 
   /// 整体任务完成情况
   void doneState(int i) {
+    mtLog("任务完成$debugPhase${FrameUtil.debugFrameCount}",tag: TagsConfig.tagSyncAutoFrame);
     assert(i == 1 || i == 2 || i == 3);
     switch (i) {
       case 1:

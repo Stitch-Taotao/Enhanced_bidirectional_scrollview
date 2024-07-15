@@ -35,10 +35,11 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late InfiniteScorllController<int> infiniteScorllController;
   bool headerIsProcessing = false;
+  bool isSync = true;
+  bool isDragTrgger = false;
   @override
   void initState() {
     super.initState();
-    var loadingAutoScrollLoad2 = loadingAutoScrollLoad<int>();
     infiniteScorllController = InfiniteScorllController<int>(
       initList: () {
         return UserInitOperation(showKey: 3, keys: List.generate(20, (index) => index + 1));
@@ -74,11 +75,27 @@ class _HomeState extends State<Home> {
         );
       },
       maxCount: 30,
-      loadTrigger: loadingAutoScrollLoad2,
     );
+    configLoadTrigger();
+  }
 
-    loadingAutoScrollLoad2.headerIndicator?.isProcessingNotifier.addListener(() {
-      if (loadingAutoScrollLoad2.headerIndicator?.isProcessingNotifier.value ?? false) {
+  void configLoadTrigger() {
+    var loadTriger = generateTigger();
+    infiniteScorllController.updateLoadTrigger(loadTriger);
+    listenStatus(loadTriger);
+  }
+
+  LoadTrigger<int> generateTigger() {
+    if (isDragTrgger) {
+      return indicatorLoad<int>();
+    } else {
+      return loadingAutoScrollLoad<int>();
+    }
+  }
+
+  void listenStatus(LoadTrigger load_trigger) {
+    load_trigger.headerIndicator?.isProcessingNotifier.addListener(() {
+      if (load_trigger.headerIndicator?.isProcessingNotifier.value ?? false) {
         if (mounted) {
           setState(() {});
           headerIsProcessing = true;
@@ -107,9 +124,59 @@ class _HomeState extends State<Home> {
           newIndex -= count;
           result = List.generate(count, (index) => newIndex++);
         }
-        return Future.delayed(const Duration(seconds: 2), () {
-          return result as List<T>;
-        });
+        if (isSync) {
+          return SynchronousFuture(result as List<T>);
+        } else {
+          return Future.delayed(const Duration(seconds: 2), () {
+            return result as List<T>;
+          });
+        }
+      },
+      appendFootTask: (infiniteScorllController) {
+        final source = infiniteScorllController.source.keyItemMap.keys.toList();
+        int count = 5;
+        List<int> result = [];
+
+        final first = source.lastOrNull;
+        final key = first;
+        if (key != null) {
+          int newIndex = key.dataKey as int;
+          // newIndex -= count;
+          result = List.generate(count, (index) => ++newIndex);
+        }
+        if (isSync) {
+          return SynchronousFuture(result as List<T>);
+        } else {
+          return Future.delayed(const Duration(seconds: 2), () {
+            return result as List<T>;
+          });
+        }
+      },
+    );
+  }
+
+  IndicatorLoadTrigger<T> indicatorLoad<T extends Object>() {
+    return IndicatorLoadTrigger<T>(
+      appendHeadTask: (infiniteScorllController) {
+        final source = infiniteScorllController.source.keyItemMap.keys.toList();
+        int count = 5;
+        List<int> result = [];
+
+        final first = source.firstOrNull;
+        final key = first;
+        if (key != null) {
+          int newIndex = key.dataKey as int;
+          newIndex -= count;
+          result = List.generate(count, (index) => newIndex++);
+        }
+
+        if (isSync) {
+          return SynchronousFuture(result as List<T>);
+        } else {
+          return Future.delayed(const Duration(seconds: 2), () {
+            return result as List<T>;
+          });
+        }
       },
       appendFootTask: (infiniteScorllController) {
         final source = infiniteScorllController.source.keyItemMap.keys.toList();
@@ -124,9 +191,16 @@ class _HomeState extends State<Home> {
           result = List.generate(count, (index) => ++newIndex);
         }
 
-        return Future.delayed(const Duration(seconds: 2), () {
-          return result as List<T>;
-        });
+        if (isSync) {
+          return SynchronousFuture(result as List<T>);
+        } else {
+          return Future.delayed(const Duration(seconds: 2), () {
+            return result as List<T>;
+          });
+        }
+      },
+      headerIndicatorBuilder: (status) {
+        return ClassicIndicator(indicatorNotifierStatus: status);
       },
     );
   }
@@ -140,24 +214,51 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: const Text('Infinite Scroll List'),
         actions: [
-          if (headerIsProcessing) CircularProgressIndicator() else Icon(Icons.refresh),
+          if (headerIsProcessing) const CircularProgressIndicator() else const Icon(Icons.done),
         ],
       ),
-      body: infiniteScrollList,
-      floatingActionButton: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-        FloatingActionButton(
-          heroTag: ValueKey(1),
-          onPressed: () {
-            setState(() {});
-          },
-          child: const Text("直接刷新UI"),
-        ),
-        FloatingActionButton(
-          heroTag: ValueKey(2),
+      body: Column(
+        children: [
+          Expanded(child: infiniteScrollList),
+          SizedBox(
+            height: 80,
+            child: Row(children: [
+              Column(
+                children: [
+                  const Text("是否同步加载数据"),
+                  Switch(
+                      value: isSync,
+                      onChanged: (value) {
+                        setState(() {
+                          isSync = !isSync;
+                          configLoadTrigger();
+                        });
+                      }),
+                ],
+              ),
+              Column(
+                children: [
+                  const Text("是否拖拽触发加载"),
+                  Switch(
+                      value: isDragTrgger,
+                      onChanged: (value) {
+                        setState(() {
+                          isDragTrgger = !isDragTrgger;
+                          configLoadTrigger();
+                        });
+                      }),
+                ],
+              )
+            ]),
+          )
+        ],
+      ),
+      floatingActionButton: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.end, children: [
+        ElevatedButton(
           onPressed: () {
             setState(() {
               print("点击了跳转0，此时keys是:${infiniteScorllController.source.keyItemMap.keys.map((e) => e.dataKey).toList()}");
-              if (infiniteScorllController.source.tagKeyMap.keys.contains(0)) {
+              if (infiniteScorllController.hasKey(0)) {
                 infiniteScorllController.jumpExistKey(tag: 0);
               } else {
                 infiniteScorllController.jumpNoExistkey(
@@ -170,16 +271,12 @@ class _HomeState extends State<Home> {
           },
           child: const Text("如果有0，直接跳，无则加载再跳"),
         ),
-        FloatingActionButton(
-          heroTag: ValueKey(3),
+        ElevatedButton(
           onPressed: () {
             setState(() {
               /// 跳转到第60个  包含有的清空
-              if (infiniteScorllController.source.keyItemMap.keys.length >= 10) {
-                // final key = infiniteScorllController.source.keyItemMap.keys.elementAt(5);
+              if (infiniteScorllController.source.keyItemMap.isNotEmpty) {
                 final key = infiniteScorllController.source.keyItemMap.keys.first;
-                // infiniteScorllController.jump(key: key, tagKey: Tagkey(Tag(category: Category.yellow)));
-                // infiniteScorllController.jump(key: key);
                 infiniteScorllController.jumpExistKey(
                   tag: key.dataKey,
                   showTag: Tag(category: Category.yellow),
@@ -190,16 +287,12 @@ class _HomeState extends State<Home> {
           },
           child: const Text("跳到最前"),
         ),
-        FloatingActionButton(
-          heroTag: ValueKey(4),
+        ElevatedButton(
           onPressed: () {
             setState(() {
               /// 跳转到第60个  包含有的清空
-              if (infiniteScorllController.source.keyItemMap.keys.length >= 10) {
-                // final key = infiniteScorllController.source.keyItemMap.keys.elementAt(5);
+              if (infiniteScorllController.source.keyItemMap.isNotEmpty) {
                 final key = infiniteScorllController.source.keyItemMap.keys.last;
-                // infiniteScorllController.jump(key: key, tagKey: Tagkey(Tag(category: Category.yellow)));
-                // infiniteScorllController.jump(key: key);
                 infiniteScorllController.jumpExistKey(
                   tag: key.dataKey,
                   showTag: Tag(category: Category.yellow),

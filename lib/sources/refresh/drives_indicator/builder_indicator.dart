@@ -2,8 +2,6 @@ import 'package:bidirectional_load_scrollview/bidirectional_load_scrollview.dart
 import 'package:flutter/material.dart';
 
 import '../../exts/double_ext.dart';
-import '../../task/load_trigger.dart';
-import 'drive_indicator.dart';
 
 typedef IndicatorBuilderFunc = Widget Function(MTDriveIndicator indicatorNotifier);
 typedef IndicatorBuilder = Widget Function(IndicatorNotifierStatus status);

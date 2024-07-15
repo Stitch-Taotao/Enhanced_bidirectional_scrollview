@@ -41,6 +41,7 @@ class TaskManager<T extends Object> {
     _allOriginTask.remove(task);
     _microTasks.remove(task);
   }
+
   /// 移除所有的任务
   void clearAllTask() {
     _allOriginTask.clear();
@@ -105,7 +106,12 @@ class TaskManager<T extends Object> {
     assert(FrameUtil.phase != SchedulerPhase.midFrameMicrotasks,
         "可能需要考虑，如果是在mid微任务阶段触发了任务准备好，会出现什么问题？，因为这种情况一般场景不会出现，暂时图省事先不做考虑了，如果你遇到必须在微任务完成的场景，触发了该断言，你可以报告给作者");
     assert(FrameUtil.phase != SchedulerPhase.persistentCallbacks, "目前初始化跳转不会添加任务，所以不可能出现在persistent阶段任务准备完成的情况");
-    addTransientCallbacks();
+    if (FrameUtil.phase == SchedulerPhase.transientCallbacks) {
+      /// 必须保证动画过程中同帧加载，因为动画阶段添加TransientCallbacks是不会触发的
+      triggerMicroTask();
+    } else {
+      addTransientCallbacks();
+    }
   }
 
   /// hasAddTransitentCallback
@@ -150,9 +156,9 @@ class TaskManager<T extends Object> {
           // return false;
         }(), "应该是完全一致的");
         // try {
-        mtLog("微任务modifyDataAndCorrectPixelCallback处理之前",tag: TagsConfig.tagTestMicroQues);
+        mtLog("微任务modifyDataAndCorrectPixelCallback处理之前", tag: TagsConfig.tagTestMicroQues);
         infiniteScorllController.modifyDataAndCorrectPixelCallback();
-        mtLog("微任务modifyDataAndCorrectPixelCallback处理之后",tag: TagsConfig.tagTestMicroQues);
+        mtLog("微任务modifyDataAndCorrectPixelCallback处理之后", tag: TagsConfig.tagTestMicroQues);
 
         // } catch (e) {
         //   /// TODO 如何比较好的处理进入时间循环的堆栈信息呢？
@@ -167,6 +173,22 @@ class TaskManager<T extends Object> {
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       hasAddTransitentCallback = false;
+    });
+  }
+
+  bool addMicroOnce = false;
+  void triggerMicroTask() {
+    if (addMicroOnce) {
+      return;
+    }
+    addMicroOnce = true;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      addMicroOnce = false;
+    });
+    Future.microtask(() {
+      mtLog("微任务modifyDataAndCorrectPixelCallback处理之前", tag: TagsConfig.tagTestMicroQues);
+      infiniteScorllController.modifyDataAndCorrectPixelCallback();
+      mtLog("微任务modifyDataAndCorrectPixelCallback处理之后", tag: TagsConfig.tagTestMicroQues);
     });
   }
 }

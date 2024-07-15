@@ -31,28 +31,36 @@ class InfiniteScorllController<T extends Object> {
   late TaskManager<T> taskManager;
   final int maxCount;
   AccumuateOffset accumuateOffset = AccumuateOffset();
-  late final ScrollCoordinator coordinator;
+  late ScrollCoordinator coordinator;
 
-  LoadTrigger<T> loadTrigger;
+  LoadTrigger<T>? _loadTrigger;
+  LoadTrigger<T> get loadTrigger => _loadTrigger!;
 
   InfiniteScorllController({
     required this.initList, // 初始化列表
     required this.buildItem, // 构建列表项
     this.shouldTriggerLoadMore,
     this.maxCount = 600,
-    required this.loadTrigger,
+    LoadTrigger<T>? loadTrigger,
   }) {
-    coordinator = ScrollCoordinator.init(loadTrigger);
     scrollController = MTScrollController(this);
     taskManager = TaskManager<T>(infiniteScorllController: this);
+    if (loadTrigger != null) {
+      updateLoadTrigger(loadTrigger);
+    }
+  }
+
+  void updateLoadTrigger(LoadTrigger<T> loadTrigger) {
+    _loadTrigger = loadTrigger;
+    coordinator = ScrollCoordinator.init(loadTrigger);
     loadTrigger.assemble(this);
   }
 
   bool isFirstInit = true;
 
-  /// 是否保持之前可以展示的窗口位置
-  bool keepPreviousVisiualWindow() {
-    return true;
+  /// 是否包含某个T
+  bool hasKey(T key) {
+    return source.tagKeyMap.containsKey(key);
   }
 
   /// 初始化列表，并指定滚动位置

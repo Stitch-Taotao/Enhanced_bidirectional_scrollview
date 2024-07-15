@@ -78,7 +78,7 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
 
   /// 正在处理
   bool get isProcessing => status.index >= DivenIndicatorStatusEnum.loading.index;
-  ValueNotifier<bool> isProcessingNotifier = ValueNotifier(false);
+  
   void _checkIsProcessing() {
     isProcessingNotifier.value = isProcessing;
   }

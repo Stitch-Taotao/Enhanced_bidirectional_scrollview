@@ -10,7 +10,7 @@ class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, P
   // final LoadTrigger loadTrigger;
   final InfiniteScorllController<T> infiniteScorllController;
   MTProcessingManager processManager;
-  Widget? Function(BuildContext context,MTAutoIndicator indicator)? builder;
+  Widget? Function(BuildContext context, MTAutoIndicator indicator)? builder;
   MTAutoIndicator({
     required this.infiniteScorllController,
     // required this.loadTrigger,
@@ -20,12 +20,12 @@ class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, P
   });
 
   void beginLoading() {
-    mtLog("触发加载：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}",tag:TagsConfig.tagSyncAutoFrame);
+    mtLog("触发加载：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}", tag: TagsConfig.tagSyncAutoFrame);
     assert(isProcessingNotifier.value == false, "当前正在加载中，请勿重复加载");
     appendTask = processManager.generateTask() as AppendTask<T>;
     isProcessingNotifier.value = true;
     appendTask?.taskStatus.listenComplete(() {
-      mtLog("加载结束：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}",tag:TagsConfig.tagSyncAutoFrame);
+      mtLog("加载结束：${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}", tag: TagsConfig.tagSyncAutoFrame);
       isProcessingNotifier.value = false;
     });
     appendTask?.taskStatus.listenCancel(() {
@@ -41,7 +41,6 @@ class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, P
   @override
   double get maxOverScrollExtent => 120;
 
-  final ValueNotifier<bool> isProcessingNotifier = ValueNotifier(false);
   @override
   bool get physicProcessing => isProcessingNotifier.value;
 

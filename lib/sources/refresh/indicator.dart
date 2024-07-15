@@ -9,8 +9,10 @@ abstract class IndicatorPhysics {
   double get maxOverScrollExtent => 120.0;
 
   ScrollPositionWithSingleContext get position;
+
   /// 是否需要预留indicotor高度
   bool get needIndicatorHeight;
+
   /// 是否需要在不完全显示的时候，弹出整个indicator
   bool get needShowFullIndicator;
 }
@@ -20,7 +22,7 @@ abstract class MTIndicator implements IndicatorPhysics {
   double get maxOverScrollExtent => 120.0;
   bool get isHeader;
   bool get isOverScroll => hasOverScroll(isHeader);
-
+  ValueNotifier<bool> isProcessingNotifier = ValueNotifier(false);
   bool hasOverScroll(bool isHeader) {
     /// 刚初始化的时候是没有contentDimensions的，build中会用到，所以需要判断一下，给个固定的false即可
     if (!position.hasContentDimensions) {

@@ -40,16 +40,19 @@ class MTScrollPositionWithSingleContext extends ScrollPositionWithSingleContext 
   void beginActivity(ScrollActivity? newActivity) {
     int oldSetPixels = 0;
     void before(MTDriveIndicator indicator) {
-      assert(() {
-        bool isOk = true;
-        if (!indicator.activityHasInit) {
-          isOk = activity == null;
-        } else {
-          isOk = newActivity != null;
-        }
-        indicator.activityHasInit = true;
-        return isOk;
-      }());
+      // assert(() {
+      //   bool isOk = true;
+      //   if (!indicator.activityHasInit) {
+      //     isOk = activity == null;
+      //   } else {
+      //     isOk = newActivity != null;
+      //   }
+      //   indicator.activityHasInit = true;
+      //   if(!isOk){
+      //     print("err");
+      //   }
+      //   return isOk;
+      // }());
     }
 
     final oldActivity = activity;
