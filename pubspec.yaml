@@ -2,7 +2,7 @@ name: bidirectional_load_scrollview
 description: "A new Flutter project."
 version: 0.0.1
 homepage:
-
+repository: https://github.com/Stitch-Taotao/Enhanced_bidirectional_scrollview
 environment:
   sdk: '>=3.0.0 <4.0.0'
   flutter: ">=3.10.0"

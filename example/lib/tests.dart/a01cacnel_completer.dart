@@ -1,27 +1,28 @@
 // import 'dart:async';
 
+// ignore_for_file: avoid_print
+
 import 'package:async/async.dart';
 
-import '../utils/logs/log_config.dart';
 
 void main(List<String> args) {
   test1();
 }
 
 void test1() {
-  mtLog("begin test1");
+  print("begin test1");
   // CancelableCompleter completer = CancelableCompleter();
   Future.microtask(() {
-    mtLog("Future.microtask");
+    print("Future.microtask");
   });
   CancelableOperation operation = CancelableOperation.fromFuture(
     Future.delayed(Duration(seconds: 3), (){
-      mtLog("future then test1");
+      print("future then test1");
     }),
     onCancel: () {
-      mtLog("onCancel test1");
+      print("onCancel test1");
       return Future.delayed(Duration(seconds: 1), () {
-        mtLog("onCancel test1 delay");
+        print("onCancel test1 delay");
         return 3;
       });
     },
@@ -29,10 +30,10 @@ void test1() {
   
   final res = operation.cancel();
   res.then((value) {
-    mtLog("res then test1 - value $value");
+    print("res then test1 - value $value");
   });
   operation.then((value) {
-    mtLog("operation then test1 - value $value");
+    print("operation then test1 - value $value");
   });
-  mtLog("end test1");
+  print("end test1");
 }
