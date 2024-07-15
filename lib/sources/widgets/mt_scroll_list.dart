@@ -138,7 +138,6 @@ class _InfiniteScrollListState<T extends Object> extends State<InfiniteScrollLis
           final indicatorW = header;
           mtLog("此时的状态: $value", tag: TagsConfig.tagBuildPhaseStatus);
           if (value.indicator.isOverScroll && !value.hiddenByTask) {
-            // if (value.indicator.isOverScroll&& value.status!=IndicatorStatusEnum.idle) {
             var indicator = value.indicator;
             final absOverOffset = indicator.absOverscrollOffset;
             return Positioned(

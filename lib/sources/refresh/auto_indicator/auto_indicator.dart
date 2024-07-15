@@ -1,19 +1,19 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:bidirectional_load_scrollview/bidirectional_load_scrollview.dart';
 import 'package:bidirectional_load_scrollview/sources/utils/logs/log_config.dart';
 import 'package:flutter/material.dart';
 
-import '../../task/load_trigger.dart';
 import '../../task/tasks.dart';
 import '../../utils/frame_util.dart';
-import '../indicator.dart';
-import '../indicator_task_manager.dart';
 
 class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, PixelAwareMixin {
-  final LoadTrigger loadTrigger;
+  // final LoadTrigger loadTrigger;
+  final InfiniteScorllController<T> infiniteScorllController;
   MTProcessingManager processManager;
   Widget? Function(BuildContext context,MTAutoIndicator indicator)? builder;
   MTAutoIndicator({
-    required this.loadTrigger,
+    required this.infiniteScorllController,
+    // required this.loadTrigger,
     required this.processManager,
     required this.isHeader,
     this.builder,
@@ -46,7 +46,7 @@ class MTAutoIndicator<T extends Object> extends MTIndicator with BuilderMixin, P
   bool get physicProcessing => isProcessingNotifier.value;
 
   @override
-  ScrollPositionWithSingleContext get position => loadTrigger.infiniteScorllController.scrollController.position;
+  ScrollPositionWithSingleContext get position => infiniteScorllController.scrollController.position;
 
   @override
   Widget? build(BuildContext context) {

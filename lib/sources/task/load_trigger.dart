@@ -23,6 +23,7 @@ abstract class LoadTrigger<T extends Object> {
     this.appendHeadTask,
     this.appendFootTask,
   });
+
   MTIndicator? _headerIndicator;
   MTIndicator? get headerIndicator => _headerIndicator;
 
@@ -31,9 +32,9 @@ abstract class LoadTrigger<T extends Object> {
   MTIndicator? buildHeaderIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller);
   MTIndicator? buildFooterIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller);
 
-  late InfiniteScorllController<T> infiniteScorllController;
+  // late InfiniteScorllController<T> infiniteScorllController;
   void assemble(InfiniteScorllController<T> controller) {
-    infiniteScorllController = controller;
+    // infiniteScorllController = controller;
     final indicotorTrigger = this;
     final headerRequest = indicotorTrigger.appendHeadTask;
     final footerRequest = indicotorTrigger.appendFootTask;
@@ -123,16 +124,40 @@ abstract class LoadTrigger<T extends Object> {
   }
 }
 
+typedef NeedTriggerFunc = bool Function(ScrollController scrollController, double scrollDelta);
+
 class AutoLoadTrigger<T extends Object> extends LoadTrigger<T> {
   /// 根据本次滚动的偏移量和滚动后的pixels来判断是否需要加载
-  bool Function(ScrollController scrollController, double scrollDelta)? needTriggerHeader;
-  bool Function(ScrollController scrollController, double scrollDelta)? needTriggerFooter;
+  NeedTriggerFunc needTriggerHeader;
+  NeedTriggerFunc needTriggerFooter;
+  static bool defaultNeedTriggerHead(scrollController, scrollDelta) {
+    final position = scrollController.position;
+    final pixels = position.pixels;
+    if (pixels <= 250) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  static bool defaultNeedTriggerFooter(scrollController, scrollDelta) {
+    final position = scrollController.position;
+    final pixels = position.pixels;
+    final maxScrollExtent = position.maxScrollExtent;
+    if (pixels >= maxScrollExtent - 250) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   AutoLoadTrigger({
-    this.needTriggerHeader,
-    this.needTriggerFooter,
+    NeedTriggerFunc? needTriggerHeader,
+    NeedTriggerFunc? needTriggerFooter,
     super.appendHeadTask,
     super.appendFootTask,
-  }) {
+  })  : needTriggerHeader = needTriggerHeader ?? defaultNeedTriggerHead,
+        needTriggerFooter = needTriggerFooter ?? defaultNeedTriggerFooter {
     /// appendHeadTask不为空，则needTriggerHeader也不为空
     // assert((needTriggerHeader == null) == (appendHeadTask == null), "请保证appendHeadTask不为空，则needTriggerHeader也不为空");
     // assert((needTriggerFooter == null) == (appendFootTask == null), "请保证appendFootTask不为空，则needTriggerFooter也不为空");
@@ -144,13 +169,13 @@ class AutoLoadTrigger<T extends Object> extends LoadTrigger<T> {
 
   @override
   MTAutoIndicator<T>? buildHeaderIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller) {
-    return MTAutoIndicator<T>(loadTrigger: this, processManager: manager, isHeader: true);
+    return MTAutoIndicator<T>(infiniteScorllController: controller, processManager: manager, isHeader: true);
     // return null;
   }
 
   @override
   MTAutoIndicator<T>? buildFooterIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller) {
-    return MTAutoIndicator<T>(loadTrigger: this, processManager: manager, isHeader: false);
+    return MTAutoIndicator<T>(infiniteScorllController: controller, processManager: manager, isHeader: false);
   }
 }
 
@@ -170,11 +195,11 @@ class IndicatorLoadTrigger<T extends Object> extends LoadTrigger<T> {
 
   @override
   HeaderIndicator<T>? buildHeaderIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller) {
-    return HeaderIndicator(loadTrigger: this, processManager: manager, builder: headerIndicatorBuilder);
+    return HeaderIndicator(infiniteScorllController: controller, processManager: manager, builder: headerIndicatorBuilder);
   }
 
   @override
   FooterIndicator<T>? buildFooterIndicator(MTProcessingManager manager, InfiniteScorllController<T> controller) {
-    return FooterIndicator(loadTrigger: this, processManager: manager, builder: footerIndicatorBuilder);
+    return FooterIndicator(infiniteScorllController: controller, processManager: manager, builder: footerIndicatorBuilder);
   }
 }

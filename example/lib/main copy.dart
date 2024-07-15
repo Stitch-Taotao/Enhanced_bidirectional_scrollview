@@ -134,7 +134,7 @@ class _HomeState extends State<Home> {
         });
       },
       headerIndicatorBuilder: (status) {
-        return ClassicHeader(indicatorNotifierStatus: status);
+        return ClassicIndicator(indicatorNotifierStatus: status);
       },
 
       // headerIndicatorBuilder: (manager, controller) {

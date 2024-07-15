@@ -129,16 +129,6 @@ class _HomeState extends State<Home> {
           return result as List<T>;
         });
       },
-      headerIndicatorBuilder: (status) {
-        return ClassicHeader(indicatorNotifierStatus: status);
-      },
-
-      // headerIndicatorBuilder: (manager, controller) {
-      //   return ClassicHeaderIndicator(
-      //     infiniteScorllController: controller as InfiniteScorllController<T>,
-      //     processManager: manager,
-      //   );
-      // },
     );
   }
   @override

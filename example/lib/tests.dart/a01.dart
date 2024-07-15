@@ -48,7 +48,14 @@ class _HomeState extends State<Home> {
   int res = 0;
   void test1() async {
     print("res:$res");
-    await syncAction();
+    // final f = syncAction();
+    // if (f is Future) {
+    //   f.then((e){
+    //     print("then res:$res");
+    //   });
+    // }
+    // print("f:$f");
+    res = await syncAction();
     print("res:$res");
   }
 

@@ -450,19 +450,10 @@ class InfiniteScorllController<T extends Object> {
     /// 是否能触发追加数据
     if (loadTrigger is AutoLoadTrigger) {
       final autoTriggerType = loadTrigger as AutoLoadTrigger<T>;
-      final position = scrollController.position;
-      final pixels = position.pixels;
       if (scrollDelta < 0) {
         if (autoTriggerType.appendHeadTask != null) {
           if (taskManager.canAddAppendTask(true)) {
-            final needTriggerCallback = autoTriggerType.needTriggerHeader ??
-                (scrollController, scrollDelta) {
-                  if (pixels <= 100) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                };
+            final needTriggerCallback = autoTriggerType.needTriggerHeader;
             final needTrigger = needTriggerCallback.call(scrollController, scrollDelta);
             if (needTrigger) {
               autoTriggerType.headerIndicator?.beginLoading();
@@ -472,14 +463,7 @@ class InfiniteScorllController<T extends Object> {
       } else if (scrollDelta > 0) {
         if (autoTriggerType.appendFootTask != null) {
           if (taskManager.canAddAppendTask(false)) {
-            final needTriggerCallback = autoTriggerType.needTriggerFooter ??
-                (scrollController, scrollDelta) {
-                  if (pixels >= position.maxScrollExtent - 100) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                };
+            final needTriggerCallback = autoTriggerType.needTriggerFooter;
             final needTrigger = needTriggerCallback.call(scrollController, scrollDelta);
             if (needTrigger) {
               autoTriggerType.footerIndicator?.beginLoading();
@@ -488,19 +472,6 @@ class InfiniteScorllController<T extends Object> {
         }
       }
     }
-    /* {
-      final position = scrollController.position;
-      final pixels = position.pixels;
-      if (pixels <= 100 && scrollDelta < 0) {
-        trickAppendData(true, () {
-          return appendDataCallBack(controller: this, isLeading: true);
-        });
-      } else if (pixels >= position.maxScrollExtent - 100 && scrollDelta > 0) {
-        trickAppendData(false, () {
-          return appendDataCallBack(controller: this, isLeading: false);
-        });
-      }
-    } */
   }
 
   /// 触发追加数据

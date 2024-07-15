@@ -2,28 +2,20 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../drives_indicator/builder_indicator.dart';
 import '../drives_indicator/drive_indicator.dart';
-import '../drives_indicator/header_indicator.dart';
 
-// class ClassicHeaderIndicator<T extends Object> extends HeaderIndicator<T> {
-//   ClassicHeaderIndicator({required super.processManager, required super.loadTrigger}) : super(builder: _builder);
-
-//   static IndicatorBuilder get _builder => (indicatorNotifer) {
-//         return _ClassicHeader(indicatorNotifierStatus: indicatorNotifer);
-//       };
-// }
-
-class ClassicHeader extends StatefulWidget {
+class ClassicIndicator extends StatefulWidget {
   final IndicatorNotifierStatus indicatorNotifierStatus;
-  const ClassicHeader({super.key, required this.indicatorNotifierStatus});
+  const ClassicIndicator({super.key, required this.indicatorNotifierStatus});
 
   @override
-  State<ClassicHeader> createState() => _ClassicHeaderState();
+  State<ClassicIndicator> createState() => _ClassicIndicatorState();
 }
 
-class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateMixin {
+class _ClassicIndicatorState extends State<ClassicIndicator> with TickerProviderStateMixin {
   IndicatorNotifierStatus get indcatorStatus => widget.indicatorNotifierStatus;
-  HeaderIndicator get indicator => indcatorStatus.indicator as HeaderIndicator;
+  BuilderIndicator get indicator => indcatorStatus.indicator as BuilderIndicator;
   // late GlobalKey _iconAnimatedSwitcherKey;
 
   /// Icon animation controller.
@@ -44,24 +36,31 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
         });
       }
     });
-    indcatorStatus.dragDirectionChange.addListener(changeDragDirection);
   }
 
-  void changeDragDirection() {
-    bool isDown = indcatorStatus.dragDirectionChange.value;
-    // mtLog("isDown:$isDown - ${_iconAnimationController.value}", tag: TagsConfig.tagAnimationController);
-
-    if (isDown) {
-      _iconAnimationController.reverse();
-    } else {
-      _iconAnimationController.forward();
+  /// 改变动画
+  void changeAnimation() {
+    final status = indicator.status;
+    switch (status) {
+      case DivenIndicatorStatusEnum.idle:
+        break;
+      case DivenIndicatorStatusEnum.dragForward:
+        _iconAnimationController.forward();
+        break;
+      case DivenIndicatorStatusEnum.dragbackward:
+        _iconAnimationController.forward();
+        break;
+      case DivenIndicatorStatusEnum.ready:
+        _iconAnimationController.reverse();
+      case DivenIndicatorStatusEnum.end:
+        _iconAnimationController.reset();
+      default:
     }
   }
 
   @override
   void dispose() {
     _iconAnimationController.dispose();
-    indcatorStatus.dragDirectionChange.removeListener(changeDragDirection);
     super.dispose();
   }
 
@@ -100,6 +99,7 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
 
   /// Build icon.
   Widget _buildIcon() {
+    changeAnimation();
     final status = indicator.status;
     Widget? icon;
     switch (status) {
@@ -107,7 +107,9 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
         icon = SizedBox(
             child: Transform.rotate(
           angle: 0,
-          child: const SizedBox(),
+          child: const Icon(
+            Icons.arrow_upward,
+          ),
         ));
         break;
       case DivenIndicatorStatusEnum.dragForward:
@@ -120,26 +122,16 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
           ),
         ));
         break;
-      // case IndicatorStatusEnum.dragbackward:
-      //   icon = SizedBox(
-      //       child: Transform.rotate(
-      //     angle: -pi / 2,
-      //     child: const Icon(
-      //       Icons.arrow_back,
-      //     ),
-      //   ));
-      //   break;
       case DivenIndicatorStatusEnum.ready:
         icon = SizedBox(
             child: Transform.rotate(
-          angle: 0,
-          child: const Icon(
-            Icons.run_circle_outlined,
-          ),
-        ));
+                angle: pi * _iconAnimationController.value,
+                child: const Icon(
+                  Icons.arrow_upward,
+                )));
         break;
       case DivenIndicatorStatusEnum.loading:
-        icon =  Container(
+        icon = Container(
           padding: const EdgeInsets.all(8),
           width: 40,
           height: 40,
@@ -170,20 +162,19 @@ class _ClassicHeaderState extends State<ClassicHeader> with TickerProviderStateM
     );
   }
 
-  /// Build text.
   Widget _buildText() {
     final status = indicator.status;
     final v = switch (status) {
       DivenIndicatorStatusEnum.idle => "idle",
-      DivenIndicatorStatusEnum.dragForward => "dragForward",
-      DivenIndicatorStatusEnum.dragbackward => "dragbackward",
-      DivenIndicatorStatusEnum.ready => "ready",
-      DivenIndicatorStatusEnum.loading => "loading",
-      DivenIndicatorStatusEnum.loaded => "loaded",
+      DivenIndicatorStatusEnum.dragForward => "下拉加载",
+      DivenIndicatorStatusEnum.dragbackward => "下拉加载",
+      DivenIndicatorStatusEnum.ready => "松开加载",
+      DivenIndicatorStatusEnum.loading => "加载中...",
+      DivenIndicatorStatusEnum.loaded => "加载完成",
       DivenIndicatorStatusEnum.end => "end",
     };
     var padRight = v.padRight(20);
-    return Container(width: 100, child: Text(padRight));
+    return SizedBox(width: 100, child: Text(padRight));
   }
 
   @override
