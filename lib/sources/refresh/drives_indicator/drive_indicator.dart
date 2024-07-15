@@ -78,10 +78,15 @@ abstract class MTDriveIndicator<T extends Object> extends MTIndicator with Build
 
   /// 正在处理
   bool get isProcessing => status.index >= DivenIndicatorStatusEnum.loading.index;
-  
+
   void _checkIsProcessing() {
-    isProcessingNotifier.value = isProcessing;
+    /// MARK 只有请求时候才为true只要loaed即为false
+    bool onRequest = status.index == DivenIndicatorStatusEnum.loading.index;
+    isProcessingNotifier.value = onRequest;
+    // mtLog("isProcessing is $isProcessing status is $status ${FrameUtil.debugFrameCount} ${FrameUtil.debugPhase}",
+    //     tag: TagsConfig.tagSyncAutoFrame);
   }
+
   @override
   bool get physicProcessing =>
       (status == DivenIndicatorStatusEnum.ready || status == DivenIndicatorStatusEnum.loading || status == DivenIndicatorStatusEnum.loaded);
